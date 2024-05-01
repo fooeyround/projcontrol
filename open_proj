@@ -1,0 +1,34 @@
+#! /bin/bash
+
+CODE_FOLDER=~/code/
+
+cd $CODE_FOLDER
+
+rproj="$(ls -d -- */* | fzf)"
+
+proj="$(basename "$rproj" | tr . _)"
+
+if [[ -z $rproj ]]; then
+    exit 0
+fi
+
+
+tmux_running=$(pgrep tmux)
+
+if [[ -z $TMUX ]] && [[ -z $tmux_running ]]; then
+    tmux new-session -s $proj -c $rproj
+    exit 0
+fi
+
+
+
+if ! tmux has-session -t=$proj 2> /dev/null; then
+    tmux new-session -ds $proj -c $CODE_FOLDER/$rproj
+fi
+
+if [[ -z $(env | grep tmux) ]]; then
+  tmux a -t $proj
+else
+  tmux switch-client -t $proj
+
+fi
