@@ -4,7 +4,7 @@ CODE_FOLDER=~/code/
 
 cd $CODE_FOLDER
 
-rproj="$(ls -d -- */* | fzf)"
+rproj="$(ls -d -- */*/.git | xargs -L1 "dirname" | fzf)"
 
 proj="$(basename "$rproj" | tr . _)"
 
@@ -13,17 +13,14 @@ if [[ -z $rproj ]]; then
 fi
 
 
-tmux_running=$(pgrep tmux)
-
-if [[ -z $TMUX ]] && [[ -z $tmux_running ]]; then
-    tmux new-session -s $proj -c $rproj
-    exit 0
-fi
 
 
+
+cd $rproj
 
 if ! tmux has-session -t=$proj 2> /dev/null; then
-    tmux new-session -ds $proj -c $CODE_FOLDER/$rproj
+  tmux new-session -ds $proj "nvim ." 
+    tmux split-window -hl 15
 fi
 
 if [[ -z $(env | grep tmux) ]]; then
